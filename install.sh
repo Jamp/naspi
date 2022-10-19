@@ -39,7 +39,7 @@ mv /home/pi /home/$PERSONAL_USER
 # Crear usuario para las cámaras y poder almacenar
 # un copia de los videos de vigilancia
 useradd -r -s /bin/false $CAMS_USER
-echo $CAMS_PASSWD | smbpasswd -a $CAMS_USER
+( echo $CAMS_PASSWD; echo $CAMS_PASSWD ) | smbpasswd -a $CAMS_USER
 
 # Poniendo a punto con la fuente que me gusta para pantalla Oled
 curl https://fonts.google.com/download?family=Silkscreen -o $SOURCE_LOCAL/Silkscreen.zip
