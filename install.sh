@@ -1,10 +1,11 @@
 #!/bin/bash
-$PERSONAL_USER=jamp
-$CAMS_USER=cams
-$CAMS_PASSWD=`openssl rand -base64 32`
-$FONT_DIRECTORY=/usr/share/fonts/truetype
-$SOURCE_LOCAL=/usr/local/src
-$WORK_DIRECTORY=$SOURCE_LOCAL/naspi
+
+PERSONAL_USER=jamp
+CAMS_USER=cams
+CAMS_PASSWD=`openssl rand -base64 12`
+FONT_DIRECTORY=/usr/share/fonts/truetype
+SOURCE_LOCAL=/usr/local/src
+WORK_DIRECTORY=$SOURCE_LOCAL/naspi
 
 # Chequear solo correr como root para evitar problemas
 if [[ $EUID -ne 0 ]]; then
@@ -32,8 +33,8 @@ mv /home/pi /home/$PERSONAL_USER
 
 # Crear usuario para las cámaras y poder almacenar
 # un copia de los videos de vigilancia
-useradd -m -s /bin/false $CAMS_USER
-smbpasswd -a $CAMS_USER -x $CAMS_PASSWD
+useradd -r -s /bin/false $CAMS_USER
+echo $CAMS_PASSWD | smbpasswd -a $CAMS_USER
 
 # Poniendo a punto con la fuente que me gusta para pantalla Oled
 curl https://fonts.google.com/download?family=Silkscreen -o $SOURCE_LOCAL/Silkscreen.zip
