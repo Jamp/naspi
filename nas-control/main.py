@@ -93,7 +93,7 @@ def is_boot_complete():
         result = check_output(cmd, shell=True)
         _, runlevel, _, _, _ = result.decode('utf-8').strip().split(' ')
 
-        return True if runlevel == '5' else False
+        return True if int(runlevel) >= 3 and int(runlevel) <= 5 else False
 
     except:
         return False
