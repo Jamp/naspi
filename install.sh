@@ -14,7 +14,9 @@ if [[ $EUID -ne 0 ]]; then
   exit 1
 fi
 
+# Cambiando el hostname
 hostnamectl set-hostname $HOSTNAME
+sed -i s/rasperrypi/$HOSTNAME/g /etc/hosts
 
 # De primer chicharrón debemos quedar actualizado
 apt-get update && apt-get upgrade -y
