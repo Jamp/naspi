@@ -1,8 +1,5 @@
 from psutil import disk_usage
-# from requests import get
-
 from subprocess import check_output
-# from netifaces import interfaces, ifaddresses, AF_INET
 
 
 def run_command(cmd: str) -> str:
