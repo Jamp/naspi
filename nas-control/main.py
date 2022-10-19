@@ -37,7 +37,7 @@ OLED_LINES = [
 ]
 
 fan_pwm = None
-PWM_FREQ = 25
+PWM_FREQ = 1000
 FAN_OFF = 0
 FAN_LOW = 25
 FAN_HIGH = 100
@@ -142,7 +142,7 @@ def control_fan(temp):
     if temp <= OFF_TEMP:
         dutyCycle = FAN_OFF
 
-    elif temp > OFF_TEMP and temp <= MIN_TEMP:
+    elif temp > OFF_TEMP and temp < MAX_TEMP:
         # delta = min(temp, MAX_TEMP) - MIN_TEMP
         # velocity = FAN_LOW + delta * FAN_GAIN)
         dutyCycle = int(FAN_LOW + (min(temp, MAX_TEMP) - MIN_TEMP) * FAN_GAIN)
@@ -230,7 +230,7 @@ if __name__ == '__main__':
             sleep(WAIT_TIME)
 
     except KeyboardInterrupt:
-        info('Elimnando...')
+        info('Stoping...')
 
     except Exception as e:
         from traceback import print_exc
