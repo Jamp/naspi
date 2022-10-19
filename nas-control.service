@@ -1,0 +1,19 @@
+[Unit]
+Description=Raspberry Pi using Oled Screen On/Off switch
+#After=raspberrypi-net-mods.service
+#After=rescue.service
+
+
+[Service]
+Type=simple
+RemainAfterExit=true
+User=root
+Group=root
+# StandardOutput=/var/log/nas.log
+# StandardError=/var/log/nas-error.log
+ExecStart=/usr/bin/python3 /usr/local/src/naspi/nas-control/main.py
+Restart=always
+TimeoutStartSec=180
+
+[Install]
+WantedBy=sysinit.target
