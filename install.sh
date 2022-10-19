@@ -1,9 +1,12 @@
 #!/bin/bash
 
 HOSTNAME=naspi
+LOCAL_TIMEZONE=America/Lima
 PERSONAL_USER=jamp
 CAMS_USER=cams
 CAMS_PASSWD=`openssl rand -base64 12`
+
+# Básico para hacer funcionar las cosas
 FONT_DIRECTORY=/usr/share/fonts/truetype
 SOURCE_LOCAL=/usr/local/src
 WORK_DIRECTORY=$SOURCE_LOCAL/naspi
@@ -17,6 +20,7 @@ fi
 # Cambiando el hostname
 hostnamectl set-hostname $HOSTNAME
 sed -i s/rasperrypi/$HOSTNAME/g /etc/hosts
+timedatectl set-timezone $LOCAL_TIMEZONE
 
 # De primer chicharrón debemos quedar actualizado
 apt-get update && apt-get upgrade -y
