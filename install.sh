@@ -1,5 +1,6 @@
 #!/bin/bash
 
+HOSTNAME=naspi
 PERSONAL_USER=jamp
 CAMS_USER=cams
 CAMS_PASSWD=`openssl rand -base64 12`
@@ -12,6 +13,8 @@ if [[ $EUID -ne 0 ]]; then
   echo "This script must be run as root"
   exit 1
 fi
+
+hostnamectl set-hostname $HOSTNAME
 
 # De primer chicharrón debemos quedar actualizado
 apt-get update && apt-get upgrade -y
