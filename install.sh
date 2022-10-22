@@ -5,6 +5,7 @@ LOCAL_TIMEZONE=America/Lima
 PERSONAL_USER=jamp
 CAMS_USER=cams
 CAMS_PASSWD=`openssl rand -base64 12`
+CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
 
 # Básico para hacer funcionar las cosas
 FONT_DIRECTORY=/usr/share/fonts/truetype
@@ -19,7 +20,7 @@ fi
 
 # Cambiando el hostname
 hostnamectl set-hostname $HOSTNAME
-sed -i s/rasperrypi/$HOSTNAME/g /etc/hosts
+sed -i s/$CURRENT_HOSTNAME/$HOSTNAME/g /etc/hosts
 timedatectl set-timezone $LOCAL_TIMEZONE
 
 # De primer chicharrón debemos quedar actualizado
@@ -28,17 +29,6 @@ apt-get install vim git python3-pip nfs-kernel-server samba samba-common-bin min
 
 # Este el directorio para montar el disco en red
 mkdir /NAS
-
-# reemplazar el usuario pi por mi usuario por comodidad
-usermod -l $PERSONAL_USER pi
-usermod -m -d /home/$PERSONAL_USER $PERSONAL_USER
-
-sed -i s/pi/$PERSONAL_USER/g /etc/passwd
-sed -i s/pi/$PERSONAL_USER/g /etc/shadow
-sed -i s/pi/$PERSONAL_USER/g /etc/group
-sed -i s/pi/$PERSONAL_USER/g /etc/sudoers
-sed -i s/pi/$PERSONAL_USER/g /etc/gshadow
-mv /home/pi /home/$PERSONAL_USER
 
 # Crear usuario para las cámaras y poder almacenar
 # un copia de los videos de vigilancia
