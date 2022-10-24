@@ -37,15 +37,15 @@ mkdir $NAS_DIRECTORY
 echo "# PARTUUID=<UUID_NAS_DISK> /NAS	ext4	defaults,errors=remount-ro	0	1" >> /etc/fstab
 
 # Dejar preparado para compartir por NFS
-echo "# /NAS <my_ip>(rw,sync,no_subtree_check,no_root_squash)  # My computer"
-echo "# /NAS/Películas <my_network>/16(rw,sync,no_subtree_check,no_root_squash)  # My network"
+echo "# /NAS <my_ip>(rw,sync,no_subtree_check,no_root_squash)  # My computer" >> /etc/exports
+echo "# /NAS/Películas <my_network>/16(rw,sync,no_subtree_check,no_root_squash)  # My network" >> /etc/exports
 
 # Crear usuario para las cámaras y poder almacenar
 # un copia de los videos de vigilancia
 useradd -r -s /bin/false $CAMS_USER
 ( echo $CAMS_PASSWD; echo $CAMS_PASSWD ) | smbpasswd -a $CAMS_USER
 
-cat <<EOF >> /etc/smb.conf
+tee -a /etc/smb.conf <<EOF
 [Public]
 path = /NAS/Public
 writeable=Yes
@@ -85,5 +85,7 @@ systemctl daemon-reload
 systemctl enable --now nfs-kernel-server
 systemctl enable --now smbd
 systemctl enable --now nas-control
+
+echo $CAMS_PASSWD > cams_passwd.txt
 
 reboot
