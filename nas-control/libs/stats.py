@@ -1,15 +1,11 @@
 from psutil import disk_usage
-from subprocess import check_output
+from libs.utils import run_command
 
 
-def run_command(cmd: str) -> str:
-    result = check_output(cmd, shell=True)
-    return result.decode('utf-8')
-
-
-def temp():
+def get_temperature() -> float:
     cmd = 'vcgencmd measure_temp | grep  -o -E "[[:digit:]].*"'
-    return run_command(cmd)
+    temp = run_command(cmd)
+    return float(temp.replace('\'C', '').strip())
 
 
 def hardware_stats() -> list:
@@ -22,8 +18,8 @@ def hardware_stats() -> list:
     cmd = "free | grep Mem | awk '{print $3/$2 * 100.0}'"
     free = float(run_command(cmd))
 
-    stats.append(['CPU', '{:0.2f}%'.format(cpu_usage)])
-    stats.append(['RAM', '{:0.2f}%'.format(free)])
+    stats.append(['CPU', cpu_usage])
+    stats.append(['RAM', free])
 
     return stats
 
@@ -34,7 +30,8 @@ def disk_stats(mounted_point: list) -> list:
   for mount in mounted_point:
     total, _, _, percent = disk_usage(mount)
 
-    disks.append([mount,
+    disks.append([
+      mount,
       '{:0.2f}GB'.format(total/(2**30)),
       '{:0.2f}%'.format(percent)
     ])
@@ -42,6 +39,6 @@ def disk_stats(mounted_point: list) -> list:
   return disks
 
 
-def ips() -> str:
+def get_ip() -> str:
   cmd = "hostname -I | cut -d' ' -f1"
   return run_command(cmd)
