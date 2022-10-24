@@ -3,7 +3,6 @@ Description=Raspberry Pi using Oled Screen On/Off switch
 #After=raspberrypi-net-mods.service
 #After=rescue.service
 
-
 [Service]
 Type=simple
 RemainAfterExit=true
@@ -16,4 +15,5 @@ Restart=always
 TimeoutStartSec=180
 
 [Install]
-WantedBy=sysinit.target
+# WantedBy=systemd-fsck.target
+WantedBy=local-fs.target
