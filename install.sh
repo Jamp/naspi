@@ -7,6 +7,8 @@ CAMS_USER=cams
 CAMS_PASSWD=`openssl rand -base64 12`
 CURRENT_HOSTNAME=`cat /etc/hostname | tr -d " \t\n\r"`
 
+NAS_DIRECTORY=/NAS
+
 # Básico para hacer funcionar las cosas
 FONT_DIRECTORY=/usr/share/fonts/truetype
 SOURCE_LOCAL=/usr/local/src
@@ -28,12 +30,44 @@ apt-get update && apt-get upgrade -y
 apt-get install vim git python3-pip nfs-kernel-server samba samba-common-bin minidlna -y
 
 # Este el directorio para montar el disco en red
-mkdir /NAS
+mkdir $NAS_DIRECTORY
+
+# Dejar preparado para montar el disco del NAS
+# para obtenerlo `blkid /dev/<NAS_DISK>`
+echo "# PARTUUID=<UUID_NAS_DISK> /NAS	ext4	defaults,errors=remount-ro	0	1" >> /etc/fstab
+
+# Dejar preparado para compartir por NFS
+echo "# /NAS <my_ip>(rw,sync,no_subtree_check,no_root_squash)  # My computer"
+echo "# /NAS/Películas <my_network>/16(rw,sync,no_subtree_check,no_root_squash)  # My network"
 
 # Crear usuario para las cámaras y poder almacenar
 # un copia de los videos de vigilancia
 useradd -r -s /bin/false $CAMS_USER
 ( echo $CAMS_PASSWD; echo $CAMS_PASSWD ) | smbpasswd -a $CAMS_USER
+
+cat <<EOF >> /etc/smb.conf
+[Public]
+path = /NAS/Public
+writeable=Yes
+create mask=0777
+directory mask=0777
+public=yes
+
+[Películas]
+path = /NAS/Películas
+writeable=Yes
+create mask=0777
+directory mask=0777
+public=yes
+
+[CAMS]
+path = /NAS/CAMS
+writeable=Yes
+create mask=0777
+directory mask=0777
+public=no
+valid user=$PERSONAL_USER $CAMS_USER
+EOF
 
 # Poniendo a punto con la fuente que me gusta para pantalla Oled
 curl https://fonts.google.com/download?family=Silkscreen -o $SOURCE_LOCAL/Silkscreen.zip
