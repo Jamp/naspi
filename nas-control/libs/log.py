@@ -10,7 +10,7 @@ logger.setLevel(INFO)
 
 infoLogHandler = handlers.TimedRotatingFileHandler(
   '/var/log/naspi.log',
-  when='M',
+  when='D',
   interval=1,
   backupCount=0)
 infoLogHandler.setFormatter(LOG_FORMATTER)
