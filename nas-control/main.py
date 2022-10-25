@@ -82,9 +82,13 @@ def shutdown():
 
     logging.info('Ending script')
 
-    # screen = Oled()
-    # screen.write('Shutdown!', 0, 10)
-    # screen.show()
+    if not Oled.check_available():
+        logging.error('Pantalla no disponible, antes de apagar')
+
+    else:
+        screen = Oled()
+        screen.write('Shutdown!', 0, 10)
+        screen.show()
 
     exit(0)
 
