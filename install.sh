@@ -32,6 +32,13 @@ apt-get install vim git python3-pip nfs-kernel-server samba samba-common-bin min
 # Este el directorio para montar el disco en red
 mkdir $NAS_DIRECTORY
 
+sed -i s/'#inotify=yes'/'inotify=yes'/g /etc/minidlna.conf
+sed -i s/'media_dir='/'#media_dir='/g /etc/minidlna.conf
+tee -a /etc/minidlna.conf <<EOF
+media_dir=V,/NAS/Películas
+media_dir=V,/NAS/Series
+EOF
+
 # Dejar preparado para montar el disco del NAS
 # para obtenerlo `blkid /dev/<NAS_DISK>`
 echo "# PARTUUID=<UUID_NAS_DISK> /NAS	ext4	defaults,errors=remount-ro	0	1" >> /etc/fstab
@@ -39,15 +46,24 @@ echo "# PARTUUID=<UUID_NAS_DISK> /NAS	ext4	defaults,errors=remount-ro	0	1" >> /e
 # Dejar preparado para compartir por NFS
 echo "# /NAS <my_ip>(rw,sync,no_subtree_check,no_root_squash)  # My computer" >> /etc/exports
 echo "# /NAS/Películas <my_network>/16(rw,sync,no_subtree_check,no_root_squash)  # My network" >> /etc/exports
+echo "# /NAS/Series <my_network>/16(rw,sync,no_subtree_check,no_root_squash)  # My network" >> /etc/exports
+echo "# /NAS/Public <my_network>/16(rw,sync,no_subtree_check,no_root_squash)  # My network" >> /etc/exports
 
 # Crear usuario para las cámaras y poder almacenar
 # un copia de los videos de vigilancia
 useradd -r -s /bin/false $CAMS_USER
 ( echo $CAMS_PASSWD; echo $CAMS_PASSWD ) | smbpasswd -a $CAMS_USER
 
-tee -a /etc/smb.conf <<EOF
+tee -a /etc/samba/smb.conf <<EOF
 [Public]
 path = /NAS/Public
+writeable=Yes
+create mask=0777
+directory mask=0777
+public=yes
+
+[Series]
+path = /NAS/Series
 writeable=Yes
 create mask=0777
 directory mask=0777
