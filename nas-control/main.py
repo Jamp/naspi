@@ -3,7 +3,6 @@
 from time import sleep
 from subprocess import run, check_output
 from signal import signal, SIGTERM
-from datetime import datetime
 
 from libs.log import logger as logging
 from libs.oled import Oled
@@ -18,6 +17,11 @@ GPIO_FAN = 18
 WAIT_TIME = 5
 PRESS_TIME = 1
 LONG_PRESS = 10 / WAIT_TIME  # 10s long press for quick shutdown
+
+MOUNT_POINTS = [
+    '/',
+    '/NAS'
+]
 
 OLED_LINES = [
     -4,
@@ -88,8 +92,8 @@ def shutdown():
 def handle_sigterm(self, sig):
     shutdown()
 
-
 if __name__ == '__main__':
+
     logging.info('Init Script!!!')
 
     signal(SIGTERM, handle_sigterm)
@@ -97,18 +101,28 @@ if __name__ == '__main__':
     gpio_setup()
 
     # Start Display
-    screen = Oled()
+    screen = None
 
     # Start Fan
     fan = Fan(GPIO_FAN)
 
-    mount_points = [
-        '/',
-        '/NAS'
-    ]
-
     try:
         while True:
+            if not Oled.check_available():
+                sleep(WAIT_TIME)
+
+                print('Pantalla no disponible')
+                logging.info('Pantalla no disponible')
+
+                continue
+
+            else:
+                print('Pantalla disponible')
+                logging.info('Pantalla disponible')
+
+            if screen is None:
+                screen = Oled()
+
             lines = []
             screen.clear()
 
@@ -122,7 +136,7 @@ if __name__ == '__main__':
 
             if is_boot_complete(): #standby
                 stats = hardware_stats()
-                disks = disk_stats(mount_points)
+                disks = disk_stats(MOUNT_POINTS)
                 ip = get_ip()
                 temperature = get_temperature()
 
