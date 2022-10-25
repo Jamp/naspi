@@ -109,16 +109,10 @@ if __name__ == '__main__':
     try:
         while True:
             if not Oled.check_available():
+                logging.error('Pantalla no disponible')
+
                 sleep(WAIT_TIME)
-
-                print('Pantalla no disponible')
-                logging.info('Pantalla no disponible')
-
                 continue
-
-            else:
-                print('Pantalla disponible')
-                logging.info('Pantalla disponible')
 
             if screen is None:
                 screen = Oled()

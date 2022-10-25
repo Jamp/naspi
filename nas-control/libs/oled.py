@@ -35,11 +35,9 @@ class Oled:
 
     try:
       run_command(cmd)
-      logging.info('i2c is available')
       return True
 
     except:
-      logging.info('i2c is unavailable')
       return False
 
   def write(self, text:str, x:int, y:int) -> None:
