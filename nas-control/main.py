@@ -129,7 +129,7 @@ if __name__ == '__main__':
                 line = 0
                 x = 0
                 for part, stat in stats:
-                    stat = '{stat:0.2f}%'
+                    stat = f'{stat:0.2f}%'
 
                     if len(stat) != 8:
                         stat = stat.rjust(8, ' ')
@@ -162,7 +162,7 @@ if __name__ == '__main__':
                 )
                 screen.write(
                     f'T: {temperature:0.2f}\'C',
-                    88,
+                    87,
                     OLED_LINES[line]
                 )
 
