@@ -1,22 +1,17 @@
 #!/bin/python3
 
 from time import sleep
-from subprocess import run, check_output
 from signal import signal, SIGTERM
 
+import RPi.GPIO as GPIO
 from libs.log import logger as logging
 from libs.oled import Oled
 from libs.stats import hardware_stats, disk_stats, get_ip, get_temperature
 from libs.fan import Fan
-import RPi.GPIO as GPIO
+from libs.utils import run_command
 
 GPIO_SWITCH = 23
-GPIO_OLED = 4
 GPIO_FAN = 18
-
-WAIT_TIME = 5
-PRESS_TIME = 1
-LONG_PRESS = 10 / WAIT_TIME  # 10s long press for quick shutdown
 
 MOUNT_POINTS = [
     '/',
@@ -30,9 +25,8 @@ OLED_LINES = [
     23
 ]
 
-def gpio_setup():
-    global GPIO_OLED, GPIO_FAN
 
+def gpio_setup():
     # Disable warnings
     GPIO.setwarnings(False)
 
@@ -53,29 +47,19 @@ def is_boot_complete():
     # 6	reboot.target	Apagado y reinicio
     try:
         cmd = 'who -r'
-        result = check_output(cmd, shell=True)
-        _, runlevel, _, _, _ = result.decode('utf-8').strip().split(' ')
+        result = run_command(cmd)
+        _, runlevel, _, _, _ = result.strip().split(' ')
 
         return True if int(runlevel) >= 3 and int(runlevel) <= 5 else False
 
     except:
         return False
 
-def normal_shutdown():
-    logging.info('Normal Shutdown')
-    run(['sudo', 'poweroff'])
 
+def run_shutdown():
+    logging.info('Requests Shutdown')
+    run_command('poweroff')
 
-def quick_shutdown():
-    logging.info('Quick Shutdown')
-
-
-def init_shutdown(press_time):
-    global LONG_PRESS
-    if press_time >= LONG_PRESS:
-        quick_shutdown()
-    else:
-        normal_shutdown()
 
 def shutdown():
     GPIO.cleanup()
@@ -86,17 +70,20 @@ def shutdown():
         logging.error('Pantalla no disponible, antes de apagar')
 
     else:
-        screen = Oled()
-        screen.write('Shutdown!', 0, 10)
-        screen.show()
+        display = Oled()
+        display.write('Shutdown!', 0, 10)
+        display.show()
 
     exit(0)
 
 
-def handle_sigterm(self, sig):
+def handle_sigterm(_, __):
     shutdown()
 
+
 if __name__ == '__main__':
+    waiting_time = 1
+    temperature = 100
 
     logging.info('Init Script!!!')
 
@@ -115,7 +102,7 @@ if __name__ == '__main__':
             if not Oled.check_available():
                 logging.error('Pantalla no disponible')
 
-                sleep(WAIT_TIME)
+                sleep(waiting_time)
                 continue
 
             if screen is None:
@@ -132,7 +119,8 @@ if __name__ == '__main__':
             # else:
             #     PRESS_TIME = 0
 
-            if is_boot_complete(): #standby
+            if is_boot_complete():  # standby
+                waiting_time = 5
                 stats = hardware_stats()
                 disks = disk_stats(MOUNT_POINTS)
                 ip = get_ip()
@@ -141,16 +129,20 @@ if __name__ == '__main__':
                 line = 0
                 x = 0
                 for part, stat in stats:
-                    stat = '{:0.2f}%'.format(stat)
+                    stat = '{stat:0.2f}%'
 
                     if len(stat) != 8:
                         stat = stat.rjust(8, ' ')
 
-                    screen.write('{}:{}'.format(part, stat), (x * 66) - 1, OLED_LINES[line])
+                    screen.write(
+                        f'{part}:{stat}',
+                        (x * 66) - 1,
+                        OLED_LINES[line]
+                    )
                     x += 1
 
                 line += 1
-                for disk, size, stat  in disks:
+                for disk, size, stat in disks:
                     if len(size) != 11:
                         size = size.rjust(11, ' ')
 
@@ -163,26 +155,31 @@ if __name__ == '__main__':
 
                     line += 1
 
-                screen.write('IP: %s' % ip, 0, OLED_LINES[line])
-                screen.write('T: {:0.2f}\'C'.format(temperature), 88, OLED_LINES[line])
+                screen.write(
+                    f'IP: {ip}',
+                    0,
+                    OLED_LINES[line]
+                )
+                screen.write(
+                    f'T: {temperature:0.2f}\'C',
+                    88,
+                    OLED_LINES[line]
+                )
 
             else:
                 try:
-                    if point is None:
-                        point = 0
+                    point = point + 1 if point < 4 else 0
 
-                except:
+                except NameError:
                     point = 0
 
-                temperature = 100
-                text = 'Booting{}'.format(''.join(['.' for _ in range(point)]))
+                waiting_points = ''.join(['.' for _ in range(point)])
+                text = f'Booting{waiting_points}'
                 screen.write(text, 0, 10)
-
-                point = point + 1 if point < 4 else 0
 
             fan.adjust(temperature)
             screen.show()
-            sleep(WAIT_TIME)
+            sleep(waiting_time)
 
     except KeyboardInterrupt:
         logging.info('Stoping...')
